@@ -49,16 +49,22 @@ func minimumBribes(q []int32) {
     }
 
     var bribes = 0
+    var swapped = true
 
     // Bubble sort
-    for i := 0; i < len(q)-1; i++ {
+    // Potential improvement: store the bounds of the first and last inversion
+    // instead of iterating over whole list.
+    for swapped {
+        swapped = false
         // Last i elements are already sorted in place
-        for j := 0; j < len(q)-i-1; j++ {
+        for j := 0; j < len(q) - 1; j++ {
             if q[j] > q[j+1] {
                 bribes += 1
                 tmp := q[j]
                 q[j] = q[j+1]
                 q[j+1] = tmp
+                // Indicate this iteration swapped items
+                swapped = true
             }
         }
     }
