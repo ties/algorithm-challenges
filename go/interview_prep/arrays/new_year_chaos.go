@@ -20,9 +20,6 @@ import (
     "strings"
 )
 
-func findMinimumBribes(state []int32, numBribes []int32, goal []int32) {
-}
-
 // Complete the minimumBribes function below.
 func minimumBribes(q []int32) {
     /**
@@ -36,20 +33,37 @@ func minimumBribes(q []int32) {
     Three bribes while only one number moved by two.
 
     Alternative:
-    |moved forward| + |moved backward|
-    */
-    var cp []int32
-    var bribes []int32
+    |moved forward| + |moved backward| => does not work either
 
-    // Copy the bribes list
-    for _, val := range a {
-        cp = append(cp, val)
-        bribes = append(bribes, 0)
+    Alternative two:
+      * Check for > 2 moves.
+      * Perform bubble sort, every swap is a bribe.
+    */
+    // Check for > 2 moves.
+    for key, value := range q {
+        moved := int(value) - (key + 1)
+        if moved > 2 {
+            fmt.Println("Too chaotic")
+            return
+        }
     }
 
-    minBribes := findMinimumBribes(q, bribes, goal)
+    var bribes = 0
 
-    fmt.Printf("%d", bribes)
+    // Bubble sort
+    for i := 0; i < len(q)-1; i++ {
+        // Last i elements are already sorted in place
+        for j := 0; j < len(q)-i-1; j++ {
+            if q[j] > q[j+1] {
+                bribes += 1
+                tmp := q[j]
+                q[j] = q[j+1]
+                q[j+1] = tmp
+            }
+        }
+    }
+
+    fmt.Printf("%d\n", bribes)
 }
 
 func main() {
