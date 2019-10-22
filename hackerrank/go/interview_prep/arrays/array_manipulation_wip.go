@@ -24,6 +24,15 @@ index->	 1 2 3  4  5 6 7 8 9 10
 ```
 
 The largest value is $10$ after all operations are performed.
+
+Approaches taken:
+  * Naieve array based approach - filling every value in interval: slow
+  * (Python) list of integer intervals with queries splitting these intervals:
+    too slow.
+  * (Python) arrays of [lhs, rhs, val] for integer intervals instead of object
+    based, bisecting array to find intervals to evaluate: too slow.
+
+Final approach: Value at x_i is the sum over x_0...x_i.
 */
 import (
     "bufio"
@@ -37,22 +46,25 @@ import (
 // Complete the arrayManipulation function below.
 func arrayManipulation(n int32, queries [][]int32) int64 {
     // slice is initialized with zeroes
-    arr := make([]int64, n)
+    // 1-based indices + another element for the decrease
+    // if upper bound == n
+    arr := make([]int64, n+2)
 
     for _, row := range queries {
-        for i:=row[0]-1; i<=row[1]-1;i++ {
-            arr[i] += int64(row[2])
-        }
-        // fmt.Printf("%v\n", arr)
+        var lhs, rhs, k = row[0], row[1], row[2]
+
+        arr[lhs] += int64(k)
+        arr[rhs+1] -= int64(k)
     }
 
-    // Find max
-    // all k are positive => positive int.
-    max := int64(0)
+    // Find maximum by adding up the changes into an accumulator.
+    // all k are positive => invariant: acc >= 0.
+    var acc, max int64 = 0, 0
 
     for _, val := range arr {
-        if val > max {
-            max = val
+        acc += val
+        if acc > max {
+            max = acc
         }
     }
 
