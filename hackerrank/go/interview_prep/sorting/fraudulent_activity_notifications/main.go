@@ -44,54 +44,85 @@ import (
 )
 
 
-type intarr []int32
-
 /**
- * Sort protocol for int32
+ * Median of a sorted array.
  */
-func (f intarr) Len() int {
-	return len(f)
-}
-
-func (f intarr) Less(i, j int) bool {
-	return f[i] < f[j]
-}
-
-func (f intarr) Swap(i, j int) {
-	f[i], f[j] = f[j], f[i]
-}
-
-
-func median(arr []int32) int32 {
-	l := len(arr)
-	data := make(intarr, l)
-	copy(data, arr)
-	// First step: sort array
-	sort.Sort(data)
-
+func Median(sortedArr []int) float32 {
+	l := len(sortedArr)
 	// Odd number -> middle
 	if l % 2 != 0 {
-		return data[l/2]
+		return float32(sortedArr[l/2])
 	}
 
-	return (data[l/2]+data[(l/2)+1])/2
+	return float32(sortedArr[(l/2)-1]+sortedArr[(l/2)])/2
+}
+
+
+func RemoveAndAdd(window []int, remove int, add int) []int {
+    d := len(window)
+    // find index
+    idx := sort.SearchInts(window, remove)
+    // remove from window by omitting
+    if idx < d-2 {
+	window = append(window[:idx], window[idx+1:]...)
+    } else {
+	window = window[:d-1]
+    }
+    // And now insert
+    // Find insertion index
+    insertIndex := sort.SearchInts(window, add)
+    // Insert at index
+    // 1: Save part of window to keep
+    trail := make([]int, len(window[insertIndex:]))
+    copy(trail, window[insertIndex:])
+    // 2: Append at index
+    window = append(window[:insertIndex], add)
+
+    // If it was not the last pos, add the remainder
+    if (insertIndex < d-1) {
+	window = append(window, trail...)
+    }
+    return window
 }
 
 
 // Complete the activityNotifications function below.
-func activityNotifications(expenditure []int32, d int32) int32 {
-	notifications := int32(0)
+func activityNotifications(expenditure []int32, depth int32) int32 {
+    d := int(depth)
 
-	for i:=int(d); i < len(expenditure); i++ {
-		// Keep the trailing d transactions
-		med := median(expenditure[i-int(d):i])
+    notifications := int32(0)
 
-		if expenditure[i] >= 2*med {
-			notifications += 1
-		}
+    // Create window and sort it.
+    window := make([]int, d)
+    for idx, val := range(expenditure[:d]) {
+	window[idx] = int(val)
+    }
+    sort.Ints(window)
+
+    for i:=int(d); i < len(expenditure); i++ {
+	// Remove oldest element from window
+	// Only do this after iteration d (window) + 1 (current)
+	if i-d-1 >= 0 {
+	    window = RemoveAndAdd(window, int(expenditure[i-d-1]), int(expenditure[i-1]))
 	}
 
-	return notifications
+	// Median of (sorted) window
+	med := Median(window)
+
+	if len(window) != d {
+	    panic(fmt.Sprintf("Window size %d != %d", len(window), d))
+	}
+	// expenditure[i-1] is in window
+	if window[sort.SearchInts(window, int(expenditure[i-1]))] != int(expenditure[i-1]) {
+	    panic("Value not in window.")
+	}
+
+	if float32(expenditure[i]) >= 2*med {
+		notifications += 1
+	}
+    }
+
+    return notifications
 }
 
 func main() {
