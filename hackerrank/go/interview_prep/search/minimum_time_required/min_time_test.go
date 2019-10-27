@@ -20,7 +20,7 @@ func TestMinTime(t *testing.T) {
 
     res = minTime([]int64{4,5,6}, 12)
 
-    if res != 12 {
+    if res != 20 {
         t.Error(fmt.Sprintf("sample input 2 result (%v) != 20", res))
     }
 }

@@ -39,11 +39,56 @@ import (
     "strings"
 )
 
+// From: https://play.golang.org/p/SmzvkDjYlb
+// greatest common divisor (GCD) via Euclidean algorithm
+func GCD(a, b int64) int64 {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+// find Least Common Multiple (LCM) via GCD
+func LCM(a, b int64, integers ...int64) int64 {
+	result := a * b / GCD(a, b)
+
+	for i := 0; i < len(integers); i++ {
+		result = LCM(result, integers[i])
+	}
+
+	return result
+}
+
 // Complete the minTime function below.
 func minTime(machines []int64, goal int64) int64 {
+    // // Find lcm of all machines
+    // // since we can apply lcm iterations at once.
+    // var lcm int64
+    // if len(machines) == 1 {
+    //     lcm = machines[0]
+    // } else {
+    //     lcm = LCM(machines[0], machines[1], machines[2:]...)
+    // }
 
+    // fmt.Printf("LCM: %v", lcm)
 
-    return int64(0)
+    // return int64(0)
+    built := int64(0)
+    t := int64(1)
+
+    for built < goal {
+        for i:=0; i < len(machines); i++ {
+            if t % machines[i] == 0 {
+                built += 1
+            }
+        }
+
+        t += 1
+    }
+
+    return t-1
 }
 
 func main() {
