@@ -39,56 +39,54 @@ import (
     "strings"
 )
 
-// From: https://play.golang.org/p/SmzvkDjYlb
-// greatest common divisor (GCD) via Euclidean algorithm
-func GCD(a, b int64) int64 {
-	for b != 0 {
-		t := b
-		b = a % b
-		a = t
-	}
-	return a
+
+func builtAt(machines []int64, t int64) int64 {
+    built := int64(0)
+    for _, val := range(machines) {
+        built += int64(t/val)
+    }
+
+    return built
 }
 
-// find Least Common Multiple (LCM) via GCD
-func LCM(a, b int64, integers ...int64) int64 {
-	result := a * b / GCD(a, b)
-
-	for i := 0; i < len(integers); i++ {
-		result = LCM(result, integers[i])
-	}
-
-	return result
-}
 
 // Complete the minTime function below.
 func minTime(machines []int64, goal int64) int64 {
-    // // Find lcm of all machines
-    // // since we can apply lcm iterations at once.
-    // var lcm int64
-    // if len(machines) == 1 {
-    //     lcm = machines[0]
-    // } else {
-    //     lcm = LCM(machines[0], machines[1], machines[2:]...)
-    // }
+    /*
+    Approach with calculating the lcm of the build time of
+    all machines and then n*lcm time steps building
+    the number built in lcm items at once
+    does not work: This loop timed out.
 
-    // fmt.Printf("LCM: %v", lcm)
+    m: |machines|
+    n: goal
 
-    // return int64(0)
-    built := int64(0)
-    t := int64(1)
-
-    for built < goal {
-        for i:=0; i < len(machines); i++ {
-            if t % machines[i] == 0 {
-                built += 1
-            }
-        }
-
-        t += 1
+    Alternative:
+      * Calculate how many are built at t=n (O(machines))
+      * Binary search: log(goal)
+      => O(machines log goal)
+    */
+    l := int64(0)
+    // Find r by searching until number produced > goal
+    r := int64(1)
+    for builtAt(machines, r) < goal {
+        r *= 2
     }
 
-    return t-1
+    // Binary search
+    for l<r {
+        mid := l+(r-l)/int64(2)
+
+        builtMid := builtAt(machines, mid)
+
+        if goal <= builtMid {
+            r = mid
+        } else {
+            l = mid+1
+        }
+    }
+
+    return l
 }
 
 func main() {
