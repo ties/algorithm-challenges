@@ -29,63 +29,24 @@ import (
     "strings"
 )
 
-func Merge(a []int32, iLeft int, iRight int, iEnd int, b []int32) int64 {
-    swaps := int64(0)
-
-    i, j := iLeft, iRight
-
-    for k:=iLeft; k<iEnd;k++ {
-        if (i < iRight && (j >= iEnd || a[i] <= a[j])) {
-            b[k] = a[i]
-            i += 1
-        } else {
-            b[k] =a[j]
-            j += 1
-        }
-    }
-
-    return swaps
-}
-
-func MergeSortInner(a []int32, b []int32, n int) int64 {
-    swaps := int64(0)
-
-    // Single element runs are already sorted.
-    // Make successively longer runs (2, 4, ...)
-    for width := 1; width < n; width *= 2 {
-        //  A is full of runs of length width
-        for i:=0; i < n; i=i + 2*width {
-            // Merge two runs: A[i:i+width-1] and A[i+width:i+2*width-1] to B[]
-            // or copy A[i:n-1] to B[] ( if(i+width >= n) )
-            mw := n
-            if i+width < n {
-                mw = i+width
-            }
-            m2w := n
-            if i+2*width < n {
-                m2w = i+2*width
-            }
-            swaps += Merge(a, i, mw, m2w, b)
-        }
-
-        copy(a, b)
-    }
-
-
-    return swaps
-}
-
 
 /**
  * Sort the given array using merge sort,
  * Return the number of inversions
  */
 func MergeSort(arr []int32) int64 {
-    n := len(arr)
-    // Make a buffer array of same size.
-    b := make([]int32, n)
+    swaps := int64(0)
 
-    return MergeSortInner(arr, b, n)
+    for i:=0; i<len(arr)-1;i++ {
+        for j:=0; j<len(arr)-i-1;j++ {
+            if arr[j] > arr[j+1] {
+                swaps += 1
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+            }
+        }
+    }
+
+    return swaps
 }
 
 // Complete the countInversions function below.
