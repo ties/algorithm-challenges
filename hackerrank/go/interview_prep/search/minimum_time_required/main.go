@@ -70,10 +70,12 @@ func minTime(machines []int64, goal int64) int64 {
     // Find r by searching until number produced > goal
     r := int64(1)
     for builtAt(machines, r) < goal {
+        // Previous r was too low -> make it the lower bound.
+        l = r
         r *= 2
     }
 
-    // Binary search
+    // Binary search for first insertion position
     for l<r {
         mid := l+(r-l)/int64(2)
 
