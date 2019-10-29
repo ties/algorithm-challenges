@@ -33,6 +33,7 @@ import (
   "fmt"
   "io"
   "os"
+  "sort"
   "strconv"
   "strings"
 )
@@ -111,14 +112,40 @@ func maximumSum(a []int64, m int64) int64 {
   // of array (not: index)
   prefixes := PrefixSums(a, m)
 
-  best := int64(-1)
+  // Create sorted prefix sum array
+  prefixSums := make([]ArrayElem, len(prefixes))
 
   for idx, val := range(prefixes) {
-    best = max(val, best)
-    for _, rhs := range(prefixes[idx+1:]) {
-      rem := ModSub(rhs, val, m)
-      best = max(rem, best)
+    prefixSums[idx] = ArrayElem{val: val, idx:idx}
+  }
+
+  sort.Sort(ArrayElemArr(prefixSums))
+
+  best := int64(-1)
+
+  for _, val := range(prefixSums) {
+    remainder := ModSub(m, val.val, m)
+    best = max(val.val, best)
+
+    // Search for first element that would wrap around again
+    idx := sort.Search(len(prefixSums), func(i int) bool { return prefixSums[i].val >= remainder })
+
+    // First element larger than remainder. Scan backwards for:
+    // * index being > cur index
+    // * val being < remainder
+    if idx >= len(prefixSums) {
+      idx = len(prefixSums)-1
     }
+
+    for i:=idx; i>=0; i-- {
+      elem := prefixSums[i]
+
+      // Invariant: first elem smaller
+      if elem.idx > val.idx && elem.val < remainder {
+        best = max(ModSub(elem.val, val.val, m), best)
+      }
+    }
+
   }
 
   return best
