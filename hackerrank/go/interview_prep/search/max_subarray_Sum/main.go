@@ -29,72 +29,99 @@ maximumSum has the following parameter(s):
   * m: a long integer, the modulo divisor
 */
 import (
-    "bufio"
-    "fmt"
-    "io"
-    "os"
-    "sort"
-    "strconv"
-    "strings"
+  "bufio"
+  "fmt"
+  "io"
+  "os"
+  "strconv"
+  "strings"
 )
 
-type intarr []int64
+// int64 sort protocol
+type ArrayElem struct {
+  val int64
+  idx int
+}
+
+func (a ArrayElem) String() string {
+  return fmt.Sprintf("{idx: %v, val: %v}", a.idx, a.val)
+}
+
+type ArrayElemArr []ArrayElem
 
 /**
- * Sort protocol for int64
+ * Sort protocol for int32
  */
-func (f intarr) Len() int {
+func (f ArrayElemArr) Len() int {
   return len(f)
 }
 
-func (f intarr) Less(i, j int) bool {
-  return f[i] < f[j]
+/**
+Sort by value and index.s
+*/
+func (f ArrayElemArr) Less(i, j int) bool {
+  if f[i].val != f[j].val {
+    return f[i].val < f[j].val
+  }
+  return f[i].idx < f[j].idx
 }
 
-func (f intarr) Swap(i, j int) {
+func (f ArrayElemArr) Swap(i, j int) {
   f[i], f[j] = f[j], f[i]
 }
 
-/**
-The maximum sum is the maximum sum of taking any
-value + whether or nor you take the previous value
 
-recursively.
-*/
-func MaxSum(a []int64, n int, m int64, res int64) int64 {
-  fmt.Printf("MaxSum(n=%4v, res=%4v)\n", n, res)
-  // Base case.
-  if n == 0 {
-    if (res+a[0])%m > res {
-      return res+a[0] %m
+func max(lhs, rhs int64) int64 {
+  if lhs < rhs {
+    return rhs
+  }
+  return lhs
+}
+
+// Build array of PrefixSums modulo m
+// param a: array of numbers
+func PrefixSums(a []int64, m int64) []int64 {
+  prefixes := make([]int64, len(a)+1)
+
+  prefixes[0] = 0
+  for i:=1; i<len(prefixes); i++ {
+    prefixes[i] = (a[i-1]%m + prefixes[i-1]%m + m)%m
+
+    if prefixes[i] < 0 {
+      panic("Overflow.")
     }
-    return res
   }
 
-  // Otherwise, pick or do not pick.
-  with := MaxSum(a, n-1, m, (res + a[n])%m)
-  withOut := MaxSum(a, n-1, m, res)
+  return prefixes
+}
 
-  if with > withOut {
-    return with
-  }
-  return withOut
+func ModSub(lhs, rhs int64, m int64) int64 {
+  return (lhs - rhs + m)%m
 }
 
 // Complete the maximumSum function below.
 // Bounds:
 // 2 <= len(a) <= 10**5 => PowerSet(a) is too big
+// max(a) == int64 -> prefix sums need to be big
+//
+// **contiguous segment** of a.
 func maximumSum(a []int64, m int64) int64 {
-  // First step: Take all a values modulo m
-  // and initialize arrays to -1
-  for idx, val := range(a) {
-    a[idx] = val % m
+  // Calculate prefix sums
+  // prefixes[i] = sum up to and including i-th *element*
+  // of array (not: index)
+  prefixes := PrefixSums(a, m)
+
+  best := int64(-1)
+
+  for idx, val := range(prefixes) {
+    best = max(val, best)
+    for _, rhs := range(prefixes[idx+1:]) {
+      rem := ModSub(rhs, val, m)
+      best = max(rem, best)
+    }
   }
 
-  // Sort the values
-  sort.Sort(intarr(a))
-
-  return MaxSum(a, len(a)-1, m, 0)
+  return best
 }
 
 func main() {
